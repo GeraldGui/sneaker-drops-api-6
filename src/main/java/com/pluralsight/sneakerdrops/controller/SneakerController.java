@@ -5,6 +5,7 @@ import com.pluralsight.sneakerdrops.service.SneakerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,6 +23,7 @@ public class SneakerController {
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public List<Sneaker> getAll(@RequestParam(required = false) Integer year,
                                 @RequestParam(required = false) String model,
                                 @RequestParam(required = false) Double minPrice,
@@ -32,6 +34,7 @@ public class SneakerController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public Sneaker getById(@PathVariable long id) {
         Sneaker sneaker = sneakerService.byId(id);
         if (sneaker == null) {
@@ -41,12 +44,14 @@ public class SneakerController {
     }
 
     @PostMapping
+    @PreAuthorize("isAutenticated()")
     public ResponseEntity<Sneaker> create(@Valid @RequestBody Sneaker sneaker) {
         Sneaker saved = sneakerService.createSneaker(sneaker);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("isAutenticated()")
     public Sneaker update(@PathVariable long id,@Valid @RequestBody Sneaker sneaker) {
         Sneaker saved =  sneakerService.updateSneaker(id, sneaker);
         if(saved == null) {
@@ -56,6 +61,7 @@ public class SneakerController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable long id) {
         if (sneakerService.byId(id) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No sneaker with id " + id);
